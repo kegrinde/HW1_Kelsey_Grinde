@@ -5,3 +5,5 @@ date: "1/13/2015"
 output: html_document
 ---
 
+# Homework instructions: 
+Use the ggplot2 package to plot the Iris data showing length vs width facetting petal/sepal vs flower type, basically reproducing slide 27 of the lecture notes. Feel free to customize the styling as you see fit (color, font size, etc). (Source: raphg/Biostat-578/HW1.md)
