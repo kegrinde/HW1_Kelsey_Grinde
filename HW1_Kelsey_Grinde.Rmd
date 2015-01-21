@@ -19,3 +19,95 @@ library(ggplot2)
 # load reshape2 package for data reshaping
 library(reshape2)
 ```
+
+# Look at the data
+Next we will look to see how the data is currently stored. Note that each row gives the sepal length and width, petal length and width, and species for one iris flower. 
+
+```{r}
+head(iris)
+```
+
+# Using `resphape2` to change how the data is stored in our data frame
+We would like to have the data to be stored using two rows per flower instead of just one. In each row we would like the species and some sort of flower identification number, as well as the length and width for one of the parts of the flower (either the sepal or the petal). The second row for that flower will include the flower ID, species, and length and width for the other part of the flower that is not measured in the first row. To do this, we need to create ID numbers for the flowers and then reshape our data so that we have three columns "Length", "Width", and "Flower.Part" instead of the four "Sepal.Length", "Sepal.Width", "Petal.Length", and "Petal.Width". 
+
+```{r}
+# add a column with ID for each flower
+iris <- within(iris, ID <- 1:nrow(iris))
+
+# look at the new column
+head(iris)
+
+# melt data frame so we have four rows per flower with sepal length, width, petal length, width
+melted_iris <- melt(iris,id.vars=c('ID','Species'),variable.name = 'Measurement.Type')
+
+# now it looks like:
+head(melted_iris)
+
+# change measurement type from factor to character
+melted_iris <- within(melted_iris, {
+  Measurement.Type <- as.character(Measurement.Type)
+})
+
+# create new columns that will say which part of the flower and which dimension is being measured. To do this we need to split the character "Sepal.Length", for example, at the middle "." which will return two parts: "Sepal" and "Length". We'll repeat this splitting process for each flower ID number and then store the flower parts ("Sepal","Petal") in a new column called "Flower.Part" and the dimension of measurement ("Width","Length") in a new column called "Dimension".
+num_flowers <- nrow(melted_iris)
+melted_iris <- within(melted_iris, {
+  # strsplit(Measurement.Type,split='[.]') will create a list of length nrow(melted_iris)
+  # where each item in the list contains two elements: flower part and dimension
+  # we'll store the flower parts in Flower.Part and dimensions in Dimension
+  Flower.Part <- unlist(strsplit(Measurement.Type,split='[.]'))[seq(1,num_flowers*2,2)]
+  Dimension <- unlist(strsplit(Measurement.Type,split='[.]'))[seq(2,num_flowers*2,2)]
+})
+
+# remove the now unnecessary Measurement.Type column
+melted_iris <- melted_iris[,-which(names(melted_iris)=='Measurement.Type')]
+
+# look at what we have now
+head(melted_iris)
+
+# now we'll cast so we have two rows per flower instead of 4
+# we'll have five columns: ID, Species, Flower.Part, Length, and Width
+cast_iris <- dcast(melted_iris,ID+Species+Flower.Part ~ Dimension)
+
+# confirm that our data now looks like what we want: it does!
+head(cast_iris)
+```
+
+# Use ggplot2 to further explore this dataset
+Now that we reshaped our dataset, it will be easier to use the package `ggplot2`'s `facet_grid()` function to create a scatterplot of length measurements versus width measurements for these flowers, with a panel for each of the six species-flower part combinations (setosa petal, setosa sepal, versicolor petal, versicolor sepal, virginica petal, and virginica sepal).
+
+Here is my replication of Slide 27 from the BIOST 578A lecture *Advanced Graphics in R*:
+
+```{r, echo = F}
+ggplot(data=cast_iris)+
+  geom_point(aes(x=Width,y=Length,color=Species))+
+  geom_smooth(aes(x=Width,y=Length,group=Species,color=Species), method="lm")+
+  facet_grid(Flower.Part~Species)
+```
+
+Here is a slightly different version that I also like:
+
+```{r, echo = F}
+ggplot(data=cast_iris)+
+  geom_point(aes(x=Width,y=Length,color=Species))+
+  geom_smooth(aes(x=Width,y=Length,group=Species,color=Species), method="lm")+
+  facet_grid(Flower.Part~Species,labeller=label_both,scales='free')+
+  ggtitle('Length and Width of Irises by Species and Flower Part')+
+  theme_light(base_size=14,base_family='Palatino')
+```
+
+# The `R` code used to produce the plots above is here:
+```{r, eval = F}
+# Plot 1: Reproduce Slide 27
+ggplot(data=cast_iris)+
+  geom_point(aes(x=Width,y=Length,color=Species))+
+  geom_smooth(aes(x=Width,y=Length,group=Species,color=Species), method="lm")+
+  facet_grid(Flower.Part~Species)
+
+# Plot 2: Modify Slide 27
+ggplot(data=cast_iris)+
+  geom_point(aes(x=Width,y=Length,color=Species))+
+  geom_smooth(aes(x=Width,y=Length,group=Species,color=Species), method="lm")+
+  facet_grid(Flower.Part~Species,labeller=label_both,scales='free')+
+  ggtitle('Length and Width of Irises by Species and Flower Part')+
+  theme_light(base_size=14,base_family='Palatino')
+```
