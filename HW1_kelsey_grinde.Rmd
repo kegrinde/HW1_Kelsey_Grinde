@@ -28,7 +28,7 @@ head(iris)
 ```
 
 # Using `resphape2` to change how the data is stored in our data frame
-We would like to have the data to be stored using two rows per flower instead of just one. In each row we would like the species and some sort of flower identification number, as well as the length and width for one of the parts of the flower (either the sepal or the petal). The second row for that flower will include the flower ID, species, and length and width for the other part of the flower that is not measured in the first row. To do this, we need to create ID numbers for the flowers and then reshape our data so that we have three columns "Length", "Width", and "Flower.Part" instead of the four "Sepal.Length", "Sepal.Width", "Petal.Length", and "Petal.Width". 
+We would like to have the data be stored using two rows per flower instead of just one. In each row we would like the species and some sort of flower identification number, as well as the length and width for one of the parts of the flower (either the sepal or the petal). The second row for that flower will include the flower ID, species, and length and width for the other part of the flower that is not measured in the first row. To do this, we need to create ID numbers for the flowers and then reshape our data so that we have three columns "Length", "Width", and "Flower.Part" instead of the four we currently have: "Sepal.Length", "Sepal.Width", "Petal.Length", and "Petal.Width". 
 
 ```{r}
 # add a column with ID for each flower
@@ -51,9 +51,7 @@ melted_iris <- within(melted_iris, {
 # create new columns that will say which part of the flower and which dimension is being measured. To do this we need to split the character "Sepal.Length", for example, at the middle "." which will return two parts: "Sepal" and "Length". We'll repeat this splitting process for each flower ID number and then store the flower parts ("Sepal","Petal") in a new column called "Flower.Part" and the dimension of measurement ("Width","Length") in a new column called "Dimension".
 num_flowers <- nrow(melted_iris)
 melted_iris <- within(melted_iris, {
-  # strsplit(Measurement.Type,split='[.]') will create a list of length nrow(melted_iris)
-  # where each item in the list contains two elements: flower part and dimension
-  # we'll store the flower parts in Flower.Part and dimensions in Dimension
+  # strsplit(Measurement.Type,split='[.]') will create a list of length nrow(melted_iris), where each item in the list contains two elements: flower part and dimension. We'll store the flower parts in Flower.Part and dimensions in Dimension
   Flower.Part <- unlist(strsplit(Measurement.Type,split='[.]'))[seq(1,num_flowers*2,2)]
   Dimension <- unlist(strsplit(Measurement.Type,split='[.]'))[seq(2,num_flowers*2,2)]
 })
