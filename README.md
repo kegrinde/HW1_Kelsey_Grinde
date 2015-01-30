@@ -5,6 +5,6 @@ The goal of this homework is to get started working with RStudio and GitHub. We 
 
 Well-commented code must be submitted as an Rmd file and a partner will check the submitted code for reproducibility. 
 
-Reviewer's Name: Yatong Li
-
 Group Number: 3
+My reviewer's name: Yatong Li
+I will be reviewing: Xiaowen Tian
